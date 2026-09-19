@@ -93,7 +93,7 @@
                             @else
                                 <form class="bid-form" action="{{ route('listings.bid', $listing) }}" method="POST">
                                     @csrf
-                                    <label><span class="sr-only">Monto de tu puja</span><input name="amount" type="number" min="{{ $minimumBid }}" step="0.01" value="{{ $minimumBid }}" required></label>
+                                    <input name="amount" type="number" aria-label="Monto de tu puja" min="{{ $minimumBid }}" step="0.01" value="{{ $minimumBid }}" required>
                                     <button class="button button-card" type="submit">Ofertar <span>→</span></button>
                                 </form>
                             @endif
