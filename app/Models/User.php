@@ -60,4 +60,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Nft::class, 'owner_id');
     }
+
+    public function bids()
+    {
+        return $this->hasMany(Bid::class, 'bidder_id');
+    }
 }
