@@ -8,8 +8,9 @@ Marketplace académico de NFTs construido con Laravel. El MVP permite simular un
 - Selector de usuario de demostración para probar compras entre José Luis, Juan José y Will.
 - Acuñación del primer NFT de una colección.
 - Compra directa con transferencia de propiedad y saldo virtual.
-- Inventario personal y reventa de una pieza.
-- Registro encadenado por hash de acuñaciones, publicaciones y ventas.
+- Inventario personal y reventa de una pieza, en venta directa o como subasta.
+- Ofertas y pujas: cualquier usuario oferta por un NFT en subasta, se conserva siempre la mejor puja (con reembolso automático al superado) y se adjudica al cierre.
+- Registro encadenado por hash de acuñaciones, publicaciones, pujas y ventas.
 - Datos de demostración reproducibles con seeders.
 - Interfaz responsive inspirada en la identidad visual de las láminas del proyecto.
 
@@ -60,4 +61,4 @@ Las pruebas cubren carga del mercado, cambio de usuario, compra con transferenci
 
 ## Próximo incremento
 
-Los pendientes, responsables y fecha objetivo están en [docs/PENDIENTES.md](docs/PENDIENTES.md) y en la vista `/pendientes` de la aplicación.
+Los pendientes, responsables y fecha objetivo están en [docs/PENDIENTES.md](docs/PENDIENTES.md) y en la vista `/pendientes` de la aplicación. La tarea 1 (Ofertas y pujas) ya está implementada; el detalle de su diseño está en ese mismo documento.

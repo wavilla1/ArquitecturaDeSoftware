@@ -23,11 +23,32 @@
                         <span>{{ $nft->collection->name }}</span><h3>{{ $nft->collection->name }} #{{ $nft->token_number }}</h3>
                         <code title="{{ $nft->token_hash }}">{{ substr($nft->token_hash, 0, 14) }}…</code>
                         @if ($nft->activeListing)
-                            <div class="listed-badge">En venta por {{ number_format((float) $nft->activeListing->price, 2) }} MONO</div>
+                            @if ($nft->activeListing->isAuction())
+                                <div class="listed-badge listed-badge-auction">
+                                    Subasta · {{ $nft->activeListing->leadingBid ? number_format((float) $nft->activeListing->leadingBid->amount, 2).' MONO en juego' : 'sin pujas aún' }}
+                                    <small>Cierra {{ $nft->activeListing->closes_at->diffForHumans() }}</small>
+                                </div>
+                            @else
+                                <div class="listed-badge">En venta por {{ number_format((float) $nft->activeListing->price, 2) }} MONO</div>
+                            @endif
                         @else
                             <form class="sell-form" action="{{ route('nfts.sell', $nft) }}" method="POST">
                                 @csrf
-                                <label><span>Precio</span><input name="price" type="number" min="0.10" step="0.01" value="{{ number_format($nft->collection->suggestedPrice(), 2, '.', '') }}" required></label>
+                                <label><span>Precio {{ '/' }} puja inicial</span><input name="price" type="number" min="0.10" step="0.01" value="{{ number_format($nft->collection->suggestedPrice(), 2, '.', '') }}" required></label>
+                                <label><span>Modalidad</span>
+                                    <select name="type" class="sell-type" onchange="this.closest('form').querySelector('.duration-field').style.display = this.value === 'auction' ? '' : 'none'">
+                                        <option value="fixed">Directa</option>
+                                        <option value="auction">Subasta</option>
+                                    </select>
+                                </label>
+                                <label class="duration-field" style="display:none"><span>Duración</span>
+                                    <select name="duration_hours">
+                                        <option value="1">1 hora</option>
+                                        <option value="6">6 horas</option>
+                                        <option value="24" selected>24 horas</option>
+                                        <option value="72">72 horas</option>
+                                    </select>
+                                </label>
                                 <button class="button button-small" type="submit">Publicar</button>
                             </form>
                         @endif
@@ -50,6 +71,33 @@
                 </article>
             @empty
                 <div class="empty-state"><p>Aún no hay movimientos para este usuario.</p></div>
+            @endforelse
+        </div>
+    </section>
+
+    <section class="section container">
+        <div class="section-heading"><div><span class="eyebrow">Subastas</span><h2>Mis pujas</h2></div></div>
+        <div class="movement-list">
+            @forelse ($bids as $bid)
+                @php($bidNft = $bid->listing->nft)
+                <article class="movement-row">
+                    <span class="movement-icon">{{ $bid->status === 'won' ? '🏆' : ($bid->status === 'outbid' ? '↧' : '◔') }}</span>
+                    <div>
+                        <strong>{{ $bidNft->collection->name }} #{{ $bidNft->token_number }} · vende {{ '@'.$bid->listing->seller->handle }}</strong>
+                        <span>
+                            @if ($bid->status === 'active')
+                                Vas ganando · cierra {{ $bid->listing->closes_at->diffForHumans() }}
+                            @elseif ($bid->status === 'won')
+                                Ganaste esta subasta
+                            @else
+                                Superada por otra puja · saldo liberado
+                            @endif
+                        </span>
+                    </div>
+                    <strong class="movement-amount">{{ number_format((float) $bid->amount, 2) }} MONO</strong>
+                </article>
+            @empty
+                <div class="empty-state"><p>Aún no has ofertado en ninguna subasta.</p></div>
             @endforelse
         </div>
     </section>

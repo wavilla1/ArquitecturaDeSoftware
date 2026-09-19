@@ -64,25 +64,54 @@
                                 <span>{{ $collection->name }}</span>
                                 <h3>{{ $collection->name }} #{{ $listing->nft->token_number }}</h3>
                             </div>
-                            <span class="verified" title="Hash único registrado">✓</span>
+                            @if ($listing->isAuction())
+                                <span class="auction-badge" title="Subasta: gana la mejor puja">Subasta</span>
+                            @else
+                                <span class="verified" title="Hash único registrado">✓</span>
+                            @endif
                         </div>
                         <div class="owner-row">
                             <span class="mini-avatar" style="--avatar: {{ $listing->seller->accent }}">{{ mb_strtoupper(mb_substr($listing->seller->name, 0, 1)) }}</span>
                             <span>Vende <strong>{{ '@'.$listing->seller->handle }}</strong></span>
                         </div>
-                        <div class="price-row">
-                            <div><span>Precio</span><strong>{{ number_format((float) $listing->price, 2) }} MONO</strong></div>
-                            <small>Sugerido {{ number_format($collection->suggestedPrice(), 2) }}</small>
-                        </div>
-                        @if ($listing->seller_id === $activeUser->id)
-                            <button class="button button-disabled" disabled>Es tu publicación</button>
-                        @elseif ((float) $activeUser->balance < (float) $listing->price)
-                            <button class="button button-disabled" disabled>Saldo insuficiente</button>
+
+                        @if ($listing->isAuction())
+                            @php($minimumBid = $listing->minimumNextBid())
+                            <div class="price-row">
+                                <div><span>{{ $listing->leadingBid ? 'Mejor puja' : 'Puja inicial' }}</span><strong>{{ number_format($listing->leadingBid ? (float) $listing->leadingBid->amount : (float) $listing->price, 2) }} MONO</strong></div>
+                                <small>{{ $listing->leadingBid ? 'de @'.$listing->leadingBid->bidder->handle : 'Sin pujas aún' }}</small>
+                            </div>
+                            <div class="auction-meta">
+                                <span>Cierra {{ $listing->closes_at->diffForHumans() }}</span>
+                            </div>
+                            @if ($listing->seller_id === $activeUser->id)
+                                <button class="button button-disabled" disabled>Es tu subasta</button>
+                            @elseif ($listing->leadingBid && $listing->leadingBid->bidder_id === $activeUser->id)
+                                <button class="button button-disabled" disabled>Vas ganando</button>
+                            @elseif ((float) $activeUser->balance < $minimumBid)
+                                <button class="button button-disabled" disabled>Saldo insuficiente</button>
+                            @else
+                                <form class="bid-form" action="{{ route('listings.bid', $listing) }}" method="POST">
+                                    @csrf
+                                    <label><span class="sr-only">Monto de tu puja</span><input name="amount" type="number" min="{{ $minimumBid }}" step="0.01" value="{{ $minimumBid }}" required></label>
+                                    <button class="button button-card" type="submit">Ofertar <span>→</span></button>
+                                </form>
+                            @endif
                         @else
-                            <form action="{{ route('listings.buy', $listing) }}" method="POST" data-confirm="¿Comprar {{ $collection->name }} #{{ $listing->nft->token_number }} por {{ $listing->price }} MONO?">
-                                @csrf
-                                <button class="button button-card" type="submit">Comprar ahora <span>→</span></button>
-                            </form>
+                            <div class="price-row">
+                                <div><span>Precio</span><strong>{{ number_format((float) $listing->price, 2) }} MONO</strong></div>
+                                <small>Sugerido {{ number_format($collection->suggestedPrice(), 2) }}</small>
+                            </div>
+                            @if ($listing->seller_id === $activeUser->id)
+                                <button class="button button-disabled" disabled>Es tu publicación</button>
+                            @elseif ((float) $activeUser->balance < (float) $listing->price)
+                                <button class="button button-disabled" disabled>Saldo insuficiente</button>
+                            @else
+                                <form action="{{ route('listings.buy', $listing) }}" method="POST" data-confirm="¿Comprar {{ $collection->name }} #{{ $listing->nft->token_number }} por {{ $listing->price }} MONO?">
+                                    @csrf
+                                    <button class="button button-card" type="submit">Comprar ahora <span>→</span></button>
+                                </form>
+                            @endif
                         @endif
                     </div>
                 </article>

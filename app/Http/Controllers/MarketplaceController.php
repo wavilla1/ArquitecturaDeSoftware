@@ -8,6 +8,8 @@ use App\Models\MarketplaceTransaction;
 use App\Models\Nft;
 use App\Models\NftCollection;
 use App\Models\User;
+use App\Services\AuctionService;
+use App\Services\ChainService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -16,12 +18,20 @@ use Illuminate\View\View;
 
 class MarketplaceController extends Controller
 {
+    public function __construct(
+        private readonly ChainService $chain,
+        private readonly AuctionService $auctions,
+    ) {
+    }
+
     public function index(Request $request): View
     {
+        $this->auctions->closeExpired();
+
         $activeUser = $this->activeUser($request);
         $listings = Listing::query()
             ->where('status', 'active')
-            ->with(['seller', 'nft.collection.creator', 'nft.owner'])
+            ->with(['seller', 'nft.collection.creator', 'nft.owner', 'leadingBid.bidder'])
             ->latest()
             ->get();
 
@@ -91,10 +101,11 @@ class MarketplaceController extends Controller
                     'seller_id' => $user->id,
                     'price' => $validated['base_price'],
                     'status' => 'active',
+                    'type' => Listing::TYPE_FIXED,
                 ]);
             }
 
-            $this->appendBlock("Acuñación de {$collection->name} #1 por @{$user->handle}");
+            $this->chain->appendBlock("Acuñación de {$collection->name} #1 por @{$user->handle}");
         });
 
         return redirect()->route('profile')->with('success', 'Colección creada y primer NFT acuñado.');
@@ -107,6 +118,7 @@ class MarketplaceController extends Controller
         DB::transaction(function () use ($listing, $buyerId): void {
             $lockedListing = Listing::query()->whereKey($listing->id)->lockForUpdate()->firstOrFail();
             abort_if($lockedListing->status !== 'active', 409, 'Esta publicación ya no está disponible.');
+            abort_if($lockedListing->isAuction(), 422, 'Esta publicación es una subasta: participa ofertando en vez de comprar directo.');
 
             $buyer = User::query()->whereKey($buyerId)->lockForUpdate()->firstOrFail();
             $seller = User::query()->whereKey($lockedListing->seller_id)->lockForUpdate()->firstOrFail();
@@ -131,23 +143,42 @@ class MarketplaceController extends Controller
             ]);
 
             $nft->load('collection');
-            $this->appendBlock("Venta de {$nft->collection->name} #{$nft->token_number}: @{$seller->handle} → @{$buyer->handle}");
+            $this->chain->appendBlock("Venta de {$nft->collection->name} #{$nft->token_number}: @{$seller->handle} → @{$buyer->handle}");
         });
 
         return back()->with('success', 'Compra completada. El NFT ya aparece en tu inventario.');
     }
 
+    public function bid(Request $request, Listing $listing): RedirectResponse
+    {
+        $validated = $request->validate([
+            'amount' => ['required', 'numeric', 'min:0.01', 'max:999999'],
+        ]);
+        $bidder = $this->activeUser($request);
+
+        $this->auctions->placeBid($listing, $bidder->id, (float) $validated['amount']);
+
+        return back()->with('success', 'Puja registrada. Si alguien te supera, tu saldo se libera automáticamente.');
+    }
+
     public function profile(Request $request): View
     {
+        $this->auctions->closeExpired();
+
         $activeUser = $this->activeUser($request);
         $inventory = Nft::query()
             ->where('owner_id', $activeUser->id)
-            ->with(['collection.creator', 'activeListing'])
+            ->with(['collection.creator', 'activeListing.leadingBid'])
             ->latest()
             ->get();
         $movements = MarketplaceTransaction::query()
             ->where(fn ($query) => $query->where('buyer_id', $activeUser->id)->orWhere('seller_id', $activeUser->id))
             ->with(['buyer', 'seller', 'nft.collection'])
+            ->latest()
+            ->limit(10)
+            ->get();
+        $bids = $activeUser->bids()
+            ->with(['listing.nft.collection', 'listing.seller'])
             ->latest()
             ->limit(10)
             ->get();
@@ -157,6 +188,7 @@ class MarketplaceController extends Controller
             'users' => User::orderBy('name')->get(),
             'inventory' => $inventory,
             'movements' => $movements,
+            'bids' => $bids,
         ]);
     }
 
@@ -164,10 +196,13 @@ class MarketplaceController extends Controller
     {
         $validated = $request->validate([
             'price' => ['required', 'numeric', 'min:0.10', 'max:999999'],
+            'type' => ['nullable', 'in:fixed,auction'],
+            'duration_hours' => ['required_if:type,auction', 'nullable', 'integer', 'in:1,6,24,72'],
         ]);
         $userId = $this->activeUser($request)->id;
+        $type = $validated['type'] ?? Listing::TYPE_FIXED;
 
-        DB::transaction(function () use ($nft, $validated, $userId): void {
+        DB::transaction(function () use ($nft, $validated, $userId, $type): void {
             $lockedNft = Nft::query()->whereKey($nft->id)->lockForUpdate()->firstOrFail();
             abort_unless($lockedNft->owner_id === $userId, 403, 'Solo el propietario puede publicar este NFT.');
             abort_if(Listing::where('nft_id', $lockedNft->id)->where('status', 'active')->exists(), 409, 'El NFT ya está publicado.');
@@ -177,6 +212,8 @@ class MarketplaceController extends Controller
                 'seller_id' => $userId,
                 'price' => $validated['price'],
                 'status' => 'active',
+                'type' => $type,
+                'closes_at' => $type === Listing::TYPE_AUCTION ? now()->addHours((int) $validated['duration_hours']) : null,
             ]);
             $lockedNft->update(['in_sale' => true]);
             MarketplaceTransaction::create([
@@ -187,10 +224,11 @@ class MarketplaceController extends Controller
             ]);
 
             $lockedNft->load(['collection', 'owner']);
-            $this->appendBlock("Publicación de {$lockedNft->collection->name} #{$lockedNft->token_number} por @{$lockedNft->owner->handle}");
+            $label = $type === Listing::TYPE_AUCTION ? 'Subasta' : 'Publicación';
+            $this->chain->appendBlock("{$label} de {$lockedNft->collection->name} #{$lockedNft->token_number} por @{$lockedNft->owner->handle}");
         });
 
-        return back()->with('success', 'NFT publicado en el mercado.');
+        return back()->with('success', $type === Listing::TYPE_AUCTION ? 'Subasta abierta. Recibirás la mejor puja al cierre.' : 'NFT publicado en el mercado.');
     }
 
     public function switchUser(Request $request): RedirectResponse
@@ -217,22 +255,5 @@ class MarketplaceController extends Controller
         $request->session()->put('demo_user_id', $user->id);
 
         return $user;
-    }
-
-    private function appendBlock(string $event): Block
-    {
-        $lastBlock = Block::query()->orderByDesc('position')->lockForUpdate()->first();
-        $position = ($lastBlock?->position ?? 0) + 1;
-        $previousHash = $lastBlock?->current_hash ?? str_repeat('0', 64);
-        $occurredAt = now();
-        $currentHash = hash('sha256', implode('|', [$position, $previousHash, $event, $occurredAt->toIso8601String()]));
-
-        return Block::create([
-            'position' => $position,
-            'previous_hash' => $previousHash,
-            'current_hash' => $currentHash,
-            'event' => $event,
-            'occurred_at' => $occurredAt,
-        ]);
     }
 }

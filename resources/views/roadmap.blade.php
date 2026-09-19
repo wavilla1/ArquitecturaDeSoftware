@@ -12,7 +12,7 @@
     <section class="container roadmap-grid">
         @foreach ($tasks as $task)
             <article class="task-card">
-                <div class="task-top"><span class="task-number">{{ $task['number'] }}</span><span class="status-pill">{{ $task['status'] }}</span></div>
+                <div class="task-top"><span class="task-number">{{ $task['number'] }}</span><span class="status-pill {{ $task['status'] === 'Completado' ? 'status-pill-done' : '' }}">{{ $task['status'] }}</span></div>
                 <h2>{{ $task['title'] }}</h2>
                 <p>{{ $task['description'] }}</p>
                 <div class="task-meta"><span>Responsable</span><strong>{{ $task['owner'] }}</strong></div>
