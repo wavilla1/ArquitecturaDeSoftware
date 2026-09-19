@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Bid;
 use App\Models\Block;
 use App\Models\Listing;
 use App\Models\MarketplaceTransaction;
@@ -29,6 +30,7 @@ class DatabaseSeeder extends Seeder
 
         $owners = [1, 0, 2, 1, 0, 1];
         $prices = [3.20, null, 4.75, 4.95, null, 3.40];
+        $auctionFlatIndex = 3; // Quantum Garden #2: se publica como subasta de ejemplo.
 
         foreach ($collections as $collectionIndex => $collection) {
             for ($token = 1; $token <= 2; $token++) {
@@ -51,12 +53,31 @@ class DatabaseSeeder extends Seeder
                 ]);
 
                 if ($isListed) {
-                    Listing::create([
+                    $isAuction = $flatIndex === $auctionFlatIndex;
+                    $listing = Listing::create([
                         'nft_id' => $nft->id,
                         'seller_id' => $owner->id,
                         'price' => $prices[$flatIndex],
                         'status' => 'active',
+                        'type' => $isAuction ? Listing::TYPE_AUCTION : Listing::TYPE_FIXED,
+                        'closes_at' => $isAuction ? now()->addHours(18) : null,
                     ]);
+
+                    if ($isAuction) {
+                        // Josè Luis abre la puja para que la demo muestre de inmediato
+                        // el flujo de "superar la mejor oferta".
+                        $bidder = $users[0];
+                        $seedAmount = round((float) $listing->price + 0.30, 2);
+                        $bidder->balance = (float) $bidder->balance - $seedAmount;
+                        $bidder->save();
+
+                        Bid::create([
+                            'listing_id' => $listing->id,
+                            'bidder_id' => $bidder->id,
+                            'amount' => $seedAmount,
+                            'status' => Bid::STATUS_ACTIVE,
+                        ]);
+                    }
                 }
             }
         }
