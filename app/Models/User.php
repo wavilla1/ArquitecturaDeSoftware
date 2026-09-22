@@ -25,6 +25,8 @@ class User extends Authenticatable
         'password',
         'balance',
         'accent',
+        'is_admin',
+        'suspended_at',
     ];
 
     /**
@@ -48,6 +50,8 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'balance' => 'decimal:2',
+            'is_admin' => 'boolean',
+            'suspended_at' => 'datetime',
         ];
     }
 
@@ -64,5 +68,15 @@ class User extends Authenticatable
     public function bids()
     {
         return $this->hasMany(Bid::class, 'bidder_id');
+    }
+
+    public function listings()
+    {
+        return $this->hasMany(Listing::class, 'seller_id');
+    }
+
+    public function isSuspended(): bool
+    {
+        return $this->suspended_at !== null;
     }
 }

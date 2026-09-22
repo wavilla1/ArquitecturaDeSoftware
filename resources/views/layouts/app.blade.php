@@ -29,6 +29,9 @@
                     <a class="{{ request()->routeIs('mint*') ? 'active' : '' }}" href="{{ route('mint') }}">Acuñar</a>
                     <a class="{{ request()->routeIs('profile') ? 'active' : '' }}" href="{{ route('profile') }}">Mi inventario</a>
                     <a class="{{ request()->routeIs('roadmap') ? 'active' : '' }}" href="{{ route('roadmap') }}">Pendientes</a>
+                    @if ($activeUser->is_admin)
+                        <a class="{{ request()->routeIs('admin.*') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">Admin</a>
+                    @endif
                 </nav>
 
                 <form class="demo-user" action="{{ route('demo.user') }}" method="POST">
@@ -47,6 +50,15 @@
             </div>
         </div>
     </header>
+
+    @if ($activeUser->isSuspended())
+        <div class="container">
+            <div class="suspended-banner" role="alert">
+                <span>⊘</span>
+                <div><strong>Cuenta suspendida por un administrador.</strong> Puedes navegar el mercado, pero no acuñar, publicar, comprar ni pujar.</div>
+            </div>
+        </div>
+    @endif
 
     @if (session('success'))
         <div class="container toast" role="status">

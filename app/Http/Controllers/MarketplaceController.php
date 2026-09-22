@@ -10,6 +10,7 @@ use App\Models\NftCollection;
 use App\Models\User;
 use App\Services\AuctionService;
 use App\Services\ChainService;
+use App\Services\DemoSessionService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -21,6 +22,7 @@ class MarketplaceController extends Controller
     public function __construct(
         private readonly ChainService $chain,
         private readonly AuctionService $auctions,
+        private readonly DemoSessionService $session,
     ) {
     }
 
@@ -31,6 +33,7 @@ class MarketplaceController extends Controller
         $activeUser = $this->activeUser($request);
         $listings = Listing::query()
             ->where('status', 'active')
+            ->whereHas('nft.collection', fn ($query) => $query->visible())
             ->with(['seller', 'nft.collection.creator', 'nft.owner', 'leadingBid.bidder'])
             ->latest()
             ->get();
@@ -39,7 +42,7 @@ class MarketplaceController extends Controller
             'activeUser' => $activeUser,
             'users' => User::orderBy('name')->get(),
             'listings' => $listings,
-            'collectionCount' => NftCollection::count(),
+            'collectionCount' => NftCollection::query()->visible()->count(),
             'nftCount' => Nft::count(),
             'volume' => MarketplaceTransaction::where('type', 'sale')->sum('amount'),
             'recentBlocks' => Block::orderByDesc('position')->limit(3)->get(),
@@ -251,9 +254,6 @@ class MarketplaceController extends Controller
 
     private function activeUser(Request $request): User
     {
-        $user = User::find($request->session()->get('demo_user_id')) ?? User::orderBy('id')->firstOrFail();
-        $request->session()->put('demo_user_id', $user->id);
-
-        return $user;
+        return $this->session->activeUser($request);
     }
 }

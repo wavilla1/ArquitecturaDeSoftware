@@ -10,11 +10,12 @@ Marketplace académico de NFTs construido con Laravel. El MVP permite simular un
 - Compra directa con transferencia de propiedad y saldo virtual.
 - Inventario personal y reventa de una pieza, en venta directa o como subasta.
 - Ofertas y pujas: cualquier usuario oferta por un NFT en subasta, se conserva siempre la mejor puja (con reembolso automático al superado) y se adjudica al cierre.
-- Registro encadenado por hash de acuñaciones, publicaciones, pujas y ventas.
+- Panel de administración: un rol admin consulta reportes del mercado, oculta o restaura colecciones y suspende o reactiva cuentas.
+- Registro encadenado por hash de acuñaciones, publicaciones, pujas, ventas y acciones de moderación.
 - Datos de demostración reproducibles con seeders.
 - Interfaz responsive inspirada en la identidad visual de las láminas del proyecto.
 
-> Este MVP usa una sesión de usuario simulada y saldo virtual. No incluye autenticación de producción, pagos reales ni una blockchain externa.
+> Este MVP usa una sesión de usuario simulada y saldo virtual. No incluye autenticación de producción, pagos reales ni una blockchain externa. El selector de usuario del encabezado hace de "login": la cuenta **Monoverse Admin** (`@admin`) es la que da acceso a `/admin`.
 
 ## Requisitos
 
@@ -45,7 +46,7 @@ Abre `http://127.0.0.1:8000`. Para desarrollo del frontend se puede usar `npm ru
 ## Arquitectura
 
 - **Presentación:** Blade, Tailwind CSS 4 y CSS personalizado.
-- **Aplicación:** controlador `MarketplaceController` para los casos de uso del MVP.
+- **Aplicación:** controladores `MarketplaceController` y `AdminController`; la lógica de negocio vive en servicios (`AuctionService`, `AdminService`, `AdminReportService`, `ChainService`, `DemoSessionService`) y los middlewares `EnsureIsAdmin` / `EnsureUserIsActive` aplican las reglas de acceso.
 - **Dominio/datos:** Eloquent con usuarios, colecciones, NFTs, publicaciones, transacciones y bloques.
 - **Persistencia:** SQLite por defecto para facilitar la demostración; la configuración puede migrarse a MySQL mediante `.env`.
 
@@ -57,8 +58,8 @@ El precio sugerido aplica un incremento básico por proporción acuñada (escase
 php artisan test
 ```
 
-Las pruebas cubren carga del mercado, cambio de usuario, compra con transferencia de saldo/propiedad y acuñación con registro de bloque.
+Las pruebas cubren carga del mercado, cambio de usuario, compra con transferencia de saldo/propiedad, acuñación con registro de bloque, el ciclo completo de subastas y el panel de administración (acceso por rol, moderación de colecciones, suspensión de cuentas y registro en la cadena).
 
 ## Próximo incremento
 
-Los pendientes, responsables y fecha objetivo están en [docs/PENDIENTES.md](docs/PENDIENTES.md) y en la vista `/pendientes` de la aplicación. La tarea 1 (Ofertas y pujas) ya está implementada; el detalle de su diseño está en ese mismo documento.
+Los pendientes, responsables y fecha objetivo están en [docs/PENDIENTES.md](docs/PENDIENTES.md) y en la vista `/pendientes` de la aplicación. Las tareas 1 (Ofertas y pujas) y 2 (Panel de administración) ya están implementadas; el detalle de su diseño está en ese mismo documento.

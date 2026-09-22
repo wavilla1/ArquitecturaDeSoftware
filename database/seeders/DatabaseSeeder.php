@@ -20,6 +20,8 @@ class DatabaseSeeder extends Seeder
             ['name' => 'Jose Luis Restrepo', 'handle' => 'joseluis', 'email' => 'jose@monoverse.test', 'balance' => 18.40, 'accent' => '#7c3aed'],
             ['name' => 'Juan Jose Garcia', 'handle' => 'juanjose', 'email' => 'juan@monoverse.test', 'balance' => 15.60, 'accent' => '#06b6d4'],
             ['name' => 'William Alberto Villa', 'handle' => 'will', 'email' => 'will@monoverse.test', 'balance' => 21.25, 'accent' => '#ec4899'],
+            // Cuenta de moderacion: sin saldo, solo entra al panel de administracion.
+            ['name' => 'Monoverse Admin', 'handle' => 'admin', 'email' => 'admin@monoverse.test', 'balance' => 0, 'accent' => '#f59e0b', 'is_admin' => true],
         ])->map(fn (array $user) => User::create($user + ['password' => Hash::make('demo1234')]));
 
         $collections = collect([

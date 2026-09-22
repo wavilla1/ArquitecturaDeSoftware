@@ -31,6 +31,12 @@ class AuctionService
             abort_if($lockedListing->hasClosed(), 409, 'La subasta ya cerró; espera la adjudicación.');
             abort_if($lockedListing->seller_id === $bidderId, 422, 'No puedes ofertar por tu propio NFT.');
 
+            // La moderación del panel de administración congela la subasta:
+            // no entran pujas nuevas, pero la vigente conserva su reserva.
+            $nft = Nft::query()->whereKey($lockedListing->nft_id)->with('collection')->firstOrFail();
+            abort_if($nft->collection->isHidden(), 422, 'Esta colección está oculta por moderación y no admite pujas.');
+            abort_if($lockedListing->seller->isSuspended(), 422, 'El vendedor está suspendido: la subasta no admite pujas.');
+
             $leadingBid = Bid::query()
                 ->where('listing_id', $lockedListing->id)
                 ->where('status', Bid::STATUS_ACTIVE)
@@ -64,7 +70,6 @@ class AuctionService
                 'status' => Bid::STATUS_ACTIVE,
             ]);
 
-            $nft = Nft::query()->whereKey($lockedListing->nft_id)->with('collection')->firstOrFail();
             $this->chain->appendBlock("Puja de {$amount} MONO por {$nft->collection->name} #{$nft->token_number} de @{$bidder->handle}");
 
             return $bid;
