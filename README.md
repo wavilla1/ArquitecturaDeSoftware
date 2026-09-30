@@ -1,3 +1,7 @@
+<img width="1600" height="900" alt="Imagen de ChatGPT 30 sept 2026, 08_16_36" src="https://github.com/user-attachments/assets/ec7dc2c1-65da-464a-a6aa-af0cfe621644" />
+
+
+
 # Monoverse — MVP
 
 Marketplace académico de NFTs construido con Laravel 12. Versión completada el 30 de septiembre de 2026; integra los aportes de pujas y administración del equipo, favoritos, verificación de la cadena y acceso con cuentas individuales.
