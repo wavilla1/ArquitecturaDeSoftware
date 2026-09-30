@@ -1,18 +1,22 @@
-# Pendientes del próximo incremento
+# Estado de las tareas del MVP
 
 **Fecha objetivo:** miércoles 23 de septiembre de 2026
-**Estado inicial:** pendiente
+**Revisión:** 30 de septiembre de 2026. La fecha original se conserva como referencia; no se afirma entrega retroactiva.
 
 | # | Función | Responsable | Criterio mínimo de entrega | Estado |
 |---|---|---|---|---|
 | 1 | Ofertas y pujas | Will | Un usuario oferta por un NFT publicado, se conserva la mejor puja y se adjudica al cierre. | ✅ Completado |
 | 2 | Panel de administración | Juan José | Un rol admin modera colecciones, suspende usuarios y consulta reportes. | ✅ Completado |
-| 3 | Verificación de la cadena | José Luis | Una vista pública recalcula los hashes e informa si la cadena fue alterada. | Pendiente |
-| 4 | Favoritos | José Luis | Un usuario marca y desmarca NFTs o colecciones y consulta su lista personal. | Pendiente |
+| 3 | Verificación de la cadena | José Luis | Una vista pública recalcula los hashes e informa si la cadena fue alterada. | ✅ Completado |
+| 4 | Favoritos | José Luis | Un usuario marca y desmarca NFTs o colecciones y consulta su lista personal. | ✅ Completado |
 
-## Fuera del alcance del MVP actual
+## Funciones completadas al 30 de septiembre
 
-Las funciones 3 y 4 no están implementadas todavía. La aplicación sí guarda una cadena interna para que la tarea 3 pueda construir la validación pública sobre los bloques existentes.
+La tarea 3 tiene una vista pública `/cadena`, recálculo SHA-256 y detección de enlaces, secuencias o contenido alterados. Un bloqueo común serializa la escritura de bloques. Es una cadena interna de auditoría, sin consenso externo; no detecta una reescritura total coherente o eliminación de los últimos bloques sin una copia de referencia.
+
+La tarea 4 ofrece guardado y eliminación de favoritos para NFTs y colecciones, con una lista por usuario en `/favoritos`. Los endpoints son idempotentes y exigen sesión; las colecciones ocultas no aparecen en esa lista.
+
+También se completaron registro/login/logout, imágenes persistentes, copias numeradas, protección de operaciones sobre colecciones ocultas y preparación para Google Cloud.
 
 ## Tarea 1 — Ofertas y pujas (implementada)
 
@@ -28,7 +32,7 @@ Las funciones 3 y 4 no están implementadas todavía. La aplicación sí guarda 
 ### Rol y acceso
 
 - La tabla `users` gana `is_admin` y `suspended_at`. El seeder crea una cuarta cuenta de demostración, **Monoverse Admin** (`@admin`, sin saldo), que es la única con `is_admin = true`.
-- Como el MVP no tiene autenticación real, el **selector de usuario del encabezado hace de login**: al elegir *Monoverse Admin* aparece el enlace **Admin** en la navegación. Para el resto de usuarios el enlace no se muestra y `/admin` responde 403.
+- El panel usa autenticación real. La cuenta admin inicia sesión con correo y contraseña; las cuentas normales reciben 403. El selector anterior se conserva únicamente como modo demo local opcional y está bloqueado en producción.
 - `App\Services\DemoSessionService` centraliza la resolución del usuario activo, de modo que controladores y middlewares leen siempre la misma sesión.
 - Middlewares: `EnsureIsAdmin` (alias `admin`) protege el panel; `EnsureUserIsActive` (alias `active`) bloquea las acciones de escritura del mercado para cuentas suspendidas.
 

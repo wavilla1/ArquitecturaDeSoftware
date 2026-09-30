@@ -43,5 +43,5 @@ const updatePreview = () => {
 
 [nameInput, colorFrom, colorTo].forEach((input) => input?.addEventListener('input', updatePreview));
 
-const toast = document.querySelector('.toast');
+const toast = document.querySelector('.toast:not([data-persistent])');
 if (toast) window.setTimeout(() => toast.classList.add('toast-hidden'), 4200);

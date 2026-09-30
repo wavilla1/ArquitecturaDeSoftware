@@ -1,12 +1,12 @@
 @extends('layouts.app')
 
-@section('title', 'Pendientes')
+@section('title', 'Estado del proyecto')
 
 @section('content')
     <section class="page-hero container roadmap-hero">
-        <span class="eyebrow"><i></i> Próximo incremento</span>
-        <h1>Trabajo asignado para el <span>próximo miércoles.</span></h1>
-        <p>Fecha objetivo: <strong>{{ \Carbon\Carbon::parse($dueDate)->locale('es')->translatedFormat('l d \d\e F \d\e Y') }}</strong>. Todas las funciones están fuera del alcance de este MVP y comienzan en estado pendiente.</p>
+        <span class="eyebrow"><i></i> Equipo Monoverse</span>
+        <h1>Estado del <span>proyecto.</span></h1>
+        <p>Fecha objetivo original: <strong>{{ \Carbon\Carbon::parse($dueDate)->locale('es')->translatedFormat('l d \d\e F \d\e Y') }}</strong>. Funciones integradas y verificadas al 30 de septiembre de 2026.</p>
     </section>
 
     <section class="container roadmap-grid">
@@ -23,6 +23,6 @@
 
     <section class="container scope-note">
         <span>Alcance actual</span>
-        <p>El MVP ya permite acuñar, comprar, revender y consultar inventario. La cadena se registra internamente, pero su verificación pública corresponde a la tarea 03.</p>
+        <p>El MVP permite registrarse, acuñar, comprar, revender, pujar, guardar favoritos y verificar la cadena. El panel de administración modera colecciones y usuarios.</p>
     </section>
 @endsection

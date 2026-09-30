@@ -6,11 +6,11 @@
     <section class="page-hero container compact-hero">
         <span class="eyebrow"><i></i> Taller de creación</span>
         <h1>Acuña tu primera <span>pieza digital.</span></h1>
-        <p>Para este MVP, cada nueva colección crea su NFT #1 y registra la operación en la cadena interna.</p>
+        <p>Crea una colección, elige cuántas piezas acuñar y registra cada una con su propio hash.</p>
     </section>
 
     <section class="container create-layout">
-        <form class="form-card" action="{{ route('mint.store') }}" method="POST">
+        <form class="form-card" action="{{ route('mint.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
             <div class="form-heading"><span>01</span><div><h2>Datos de la colección</h2><p>Creador: {{ '@'.$activeUser->handle }}</p></div></div>
 
@@ -27,12 +27,14 @@
                 <label class="field"><span>Precio base (MONO)</span><input name="base_price" type="number" min="0.10" max="999999" step="0.01" value="{{ old('base_price', '2.50') }}" required></label>
             </div>
             <div class="form-grid color-grid">
+                <label class="field"><span>Piezas a acuñar (máximo 25)</span><input name="quantity" type="number" min="1" max="25" value="{{ old('quantity', 1) }}" required></label>
+                <label class="field"><span>Imagen opcional (JPG, PNG, WebP, hasta 1 MB)</span><input name="image" type="file" accept="image/jpeg,image/png,image/webp"></label>
                 <label class="field"><span>Color inicial</span><input id="palette-from" name="palette_from" type="color" value="{{ old('palette_from', '#7c3aed') }}"></label>
                 <label class="field"><span>Color final</span><input id="palette-to" name="palette_to" type="color" value="{{ old('palette_to', '#06b6d4') }}"></label>
             </div>
             <label class="check-field">
                 <input type="checkbox" name="list_now" value="1" @checked(old('list_now', true))>
-                <span><strong>Publicar al acuñar</strong><small>El NFT #1 aparecerá de inmediato en el mercado al precio base.</small></span>
+                <span><strong>Publicar al acuñar</strong><small>Las piezas acuñadas aparecerán en el mercado al precio base.</small></span>
             </label>
             <button class="button button-primary button-wide" type="submit">Acuñar NFT <span>✦</span></button>
         </form>

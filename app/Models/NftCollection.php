@@ -17,7 +17,7 @@ class NftCollection extends Model
 
     protected $fillable = [
         'creator_id', 'name', 'slug', 'description', 'status', 'total_supply',
-        'minted_count', 'base_price', 'palette_from', 'palette_to',
+        'minted_count', 'base_price', 'palette_from', 'palette_to', 'image_data', 'image_mime',
     ];
 
     protected function casts(): array

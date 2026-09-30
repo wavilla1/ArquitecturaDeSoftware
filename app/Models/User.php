@@ -79,4 +79,14 @@ class User extends Authenticatable
     {
         return $this->suspended_at !== null;
     }
+
+    public function favoriteNfts()
+    {
+        return $this->belongsToMany(Nft::class, 'nft_favorites')->withTimestamps();
+    }
+
+    public function favoriteCollections()
+    {
+        return $this->belongsToMany(NftCollection::class, 'collection_favorites', 'user_id', 'collection_id')->withTimestamps();
+    }
 }

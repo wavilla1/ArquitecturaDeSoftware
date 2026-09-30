@@ -28,15 +28,17 @@
                     <a class="{{ request()->routeIs('marketplace') ? 'active' : '' }}" href="{{ route('marketplace') }}">Mercado</a>
                     <a class="{{ request()->routeIs('mint*') ? 'active' : '' }}" href="{{ route('mint') }}">Acuñar</a>
                     <a class="{{ request()->routeIs('profile') ? 'active' : '' }}" href="{{ route('profile') }}">Mi inventario</a>
-                    <a class="{{ request()->routeIs('roadmap') ? 'active' : '' }}" href="{{ route('roadmap') }}">Pendientes</a>
-                    @if ($activeUser->is_admin)
+                    <a class="{{ request()->routeIs('favorites') ? 'active' : '' }}" href="{{ route('favorites') }}">Favoritos</a>
+                    <a class="{{ request()->routeIs('chain') ? 'active' : '' }}" href="{{ route('chain') }}">Cadena</a>
+                    @if ($activeUser?->is_admin)
                         <a class="{{ request()->routeIs('admin.*') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">Admin</a>
                     @endif
                 </nav>
 
+                @if (config('monoverse.demo') && ! app()->environment('production') && isset($users))
                 <form class="demo-user" action="{{ route('demo.user') }}" method="POST">
                     @csrf
-                    <span class="avatar" style="--avatar: {{ $activeUser->accent }}">{{ mb_strtoupper(mb_substr($activeUser->name, 0, 1)) }}</span>
+                    <span class="avatar" style="--avatar: {{ $activeUser?->accent }}">{{ mb_strtoupper(mb_substr($activeUser?->name ?? 'M', 0, 1)) }}</span>
                     <label>
                         <span class="sr-only">Usuario de demostración</span>
                         <select name="user_id" onchange="this.form.submit()" aria-label="Cambiar usuario de demostración">
@@ -47,11 +49,19 @@
                     </label>
                     <strong>{{ number_format((float) $activeUser->balance, 2) }} MONO</strong>
                 </form>
+                @elseif ($activeUser)
+                    <div class="account-menu">
+                        <a href="{{ route('profile') }}">{{ '@'.$activeUser->handle }}<small>{{ number_format((float) $activeUser->balance, 2) }} MONO</small></a>
+                        <form action="{{ route('logout') }}" method="POST">@csrf<button class="button button-small" type="submit">Salir</button></form>
+                    </div>
+                @else
+                    <a class="button button-secondary" href="{{ route('login') }}">Ingresar</a>
+                @endif
             </div>
         </div>
     </header>
 
-    @if ($activeUser->isSuspended())
+    @if ($activeUser?->isSuspended())
         <div class="container">
             <div class="suspended-banner" role="alert">
                 <span>⊘</span>
@@ -85,7 +95,7 @@
         <div class="container footer-row">
             <div>
                 <span class="brand footer-brand"><span class="brand-mark">M</span> MONOVERSE</span>
-                <p>MVP académico · Arquitectura cliente-servidor con Laravel.</p>
+                <p>Mercado académico · MONO es saldo virtual, sin valor monetario.</p>
             </div>
             <p>Hecho por José Luis, Juan José y William Alberto.</p>
         </div>

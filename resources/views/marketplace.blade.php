@@ -36,7 +36,7 @@
             <div><strong>{{ $nftCount }}</strong><span>NFTs acuñados</span></div>
             <div><strong>{{ $collectionCount }}</strong><span>Colecciones</span></div>
             <div><strong>{{ number_format((float) $volume, 2) }}</strong><span>Volumen MONO</span></div>
-            <div><strong>3</strong><span>Coleccionistas</span></div>
+            <div><strong>{{ $userCount }}</strong><span>Coleccionistas</span></div>
         </div>
     </section>
 
@@ -46,7 +46,7 @@
                 <span class="eyebrow">Mercado abierto</span>
                 <h2>Piezas en venta</h2>
             </div>
-            <p>Actúas como <strong>{{ '@'.$activeUser->handle }}</strong>. Cambia el usuario desde la barra superior para probar compras entre perfiles.</p>
+            <p>{{ $activeUser ? 'Colecciona con tu cuenta @'.$activeUser->handle.'.' : 'Crea una cuenta para comprar, ofertar y guardar tus favoritos.' }} Todas las operaciones usan saldo virtual.</p>
         </div>
 
         <div class="nft-grid">
@@ -54,6 +54,7 @@
                 @php($collection = $listing->nft->collection)
                 <article class="nft-card">
                     <div class="nft-art" style="--art-start: {{ $collection->palette_from }}; --art-end: {{ $collection->palette_to }}">
+                        @if ($collection->image_data)<img class="collection-image" src="{{ route('collections.image', $collection) }}" alt="{{ $collection->name }}" loading="lazy">@endif
                         <span class="nft-edition">#{{ str_pad($listing->nft->token_number, 2, '0', STR_PAD_LEFT) }} / {{ $collection->total_supply }}</span>
                         <span class="nft-monogram">{{ mb_strtoupper(mb_substr($collection->name, 0, 1)) }}</span>
                         <div class="art-ring"></div>
@@ -74,6 +75,12 @@
                             <span class="mini-avatar" style="--avatar: {{ $listing->seller->accent }}">{{ mb_strtoupper(mb_substr($listing->seller->name, 0, 1)) }}</span>
                             <span>Vende <strong>{{ '@'.$listing->seller->handle }}</strong></span>
                         </div>
+                        @if ($activeUser)
+                            <div class="favorite-actions">
+                                <form action="{{ route('favorites.nft', $listing->nft) }}" method="POST">@csrf<input type="hidden" name="saved" value="{{ in_array($listing->nft_id, $favoriteNftIds) ? 0 : 1 }}"><button type="submit">{{ in_array($listing->nft_id, $favoriteNftIds) ? '♥ NFT guardado' : '♡ Guardar NFT' }}</button></form>
+                                <form action="{{ route('favorites.collection', $collection) }}" method="POST">@csrf<input type="hidden" name="saved" value="{{ in_array($collection->id, $favoriteCollectionIds) ? 0 : 1 }}"><button type="submit">{{ in_array($collection->id, $favoriteCollectionIds) ? '♥ Colección' : '♡ Colección' }}</button></form>
+                            </div>
+                        @endif
 
                         @if ($listing->isAuction())
                             @php($minimumBid = $listing->minimumNextBid())
@@ -84,7 +91,9 @@
                             <div class="auction-meta">
                                 <span>Cierra {{ $listing->closes_at->diffForHumans() }}</span>
                             </div>
-                            @if ($listing->seller_id === $activeUser->id)
+                            @if (!$activeUser)
+                                <a class="button button-card" href="{{ route('login') }}">Ingresar para ofertar</a>
+                            @elseif ($listing->seller_id === $activeUser->id)
                                 <button class="button button-disabled" disabled>Es tu subasta</button>
                             @elseif ($listing->leadingBid && $listing->leadingBid->bidder_id === $activeUser->id)
                                 <button class="button button-disabled" disabled>Vas ganando</button>
@@ -102,7 +111,9 @@
                                 <div><span>Precio</span><strong>{{ number_format((float) $listing->price, 2) }} MONO</strong></div>
                                 <small>Sugerido {{ number_format($collection->suggestedPrice(), 2) }}</small>
                             </div>
-                            @if ($listing->seller_id === $activeUser->id)
+                            @if (!$activeUser)
+                                <a class="button button-card" href="{{ route('login') }}">Ingresar para comprar</a>
+                            @elseif ($listing->seller_id === $activeUser->id)
                                 <button class="button button-disabled" disabled>Es tu publicación</button>
                             @elseif ((float) $activeUser->balance < (float) $listing->price)
                                 <button class="button button-disabled" disabled>Saldo insuficiente</button>
@@ -124,7 +135,7 @@
     <section class="section container chain-preview">
         <div class="section-heading">
             <div><span class="eyebrow">Registro encadenado</span><h2>Actividad reciente</h2></div>
-            <span class="pending-note">Verificación pública · pendiente</span>
+            <a class="button button-secondary" href="{{ route('chain') }}">Verificar cadena →</a>
         </div>
         <div class="block-list">
             @foreach ($recentBlocks as $block)

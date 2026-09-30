@@ -1,21 +1,25 @@
 # Monoverse — MVP
 
-Marketplace académico de NFTs construido con Laravel. El MVP permite simular un mercado entre tres usuarios, acuñar colecciones, comprar piezas, volver a publicarlas y registrar los movimientos en una cadena de bloques interna.
+Marketplace académico de NFTs construido con Laravel 12. Versión completada el 30 de septiembre de 2026; integra los aportes de pujas y administración del equipo, favoritos, verificación de la cadena y acceso con cuentas individuales.
+
+**Sitio desplegado:** [Monoverse en Google Cloud](https://monoverse-414457182299.us-central1.run.app). Crea una cuenta para explorar con saldo virtual. La administración y los costos se documentan en [docs/GCP.md](docs/GCP.md).
 
 ## Alcance implementado
 
 - Mercado público de NFTs con precio de venta y precio sugerido por escasez/demanda.
-- Selector de usuario de demostración para probar compras entre José Luis, Juan José y Will.
-- Acuñación del primer NFT de una colección.
+- Registro, inicio y cierre de sesión. Cada cuenta nueva recibe 25 MONO virtuales.
+- Acuñación de 1 a 25 copias por colección, respetando el suministro, con hash único y una imagen opcional JPG/PNG/WebP de hasta 1 MB.
 - Compra directa con transferencia de propiedad y saldo virtual.
 - Inventario personal y reventa de una pieza, en venta directa o como subasta.
 - Ofertas y pujas: cualquier usuario oferta por un NFT en subasta, se conserva siempre la mejor puja (con reembolso automático al superado) y se adjudica al cierre.
 - Panel de administración: un rol admin consulta reportes del mercado, oculta o restaura colecciones y suspende o reactiva cuentas.
 - Registro encadenado por hash de acuñaciones, publicaciones, pujas, ventas y acciones de moderación.
+- Verificación pública de hashes, enlaces y secuencia en `/cadena`.
+- Favoritos privados de NFTs y colecciones en `/favoritos`.
 - Datos de demostración reproducibles con seeders.
 - Interfaz responsive inspirada en la identidad visual de las láminas del proyecto.
 
-> Este MVP usa una sesión de usuario simulada y saldo virtual. No incluye autenticación de producción, pagos reales ni una blockchain externa. El selector de usuario del encabezado hace de "login": la cuenta **Monoverse Admin** (`@admin`) es la que da acceso a `/admin`.
+> MONO es saldo ficticio: no hay pagos reales, billeteras criptográficas ni blockchain externa. La verificación detecta inconsistencias internas, no una reescritura completa o truncamiento final por quien controla la base de datos.
 
 ## Requisitos
 
@@ -32,23 +36,27 @@ copy .env.example .env
 php artisan key:generate
 ```
 
-Crea el archivo `database/database.sqlite` si no existe y ejecuta:
+Crea el archivo vacío `database/database.sqlite` si no existe y ejecuta:
 
 ```bash
-php artisan migrate:fresh --seed
-npm install
+php artisan migrate --seed
+npm ci
 npm run build
 php artisan serve
 ```
 
-Abre `http://127.0.0.1:8000`. Para desarrollo del frontend se puede usar `npm run dev` en otra terminal.
+Abre `http://127.0.0.1:8000`. Para desarrollo del frontend se puede usar `npm run dev` en otra terminal. Las migraciones conservan los datos existentes; el seeder solo inicializa una base vacía.
+
+En local puedes crear tu cuenta o ingresar con `jose@monoverse.test`, `juan@monoverse.test`, `will@monoverse.test` o `admin@monoverse.test`, contraseña `demo1234`. Para demostraciones locales sin login se admite `MONOVERSE_DEMO=true`; en producción el selector está deshabilitado incluso si esa variable se activa. Las cuentas sembradas en producción reciben contraseñas aleatorias, no la contraseña local.
+
+Para mantener el cierre de subastas sin visitas, ejecuta `php artisan schedule:work`. En Google Cloud un job de respaldo ejecuta `auctions:close` cada cinco minutos; las visitas al mercado también procesan cierres vencidos inmediatamente.
 
 ## Arquitectura
 
 - **Presentación:** Blade, Tailwind CSS 4 y CSS personalizado.
 - **Aplicación:** controladores `MarketplaceController` y `AdminController`; la lógica de negocio vive en servicios (`AuctionService`, `AdminService`, `AdminReportService`, `ChainService`, `DemoSessionService`) y los middlewares `EnsureIsAdmin` / `EnsureUserIsActive` aplican las reglas de acceso.
 - **Dominio/datos:** Eloquent con usuarios, colecciones, NFTs, publicaciones, transacciones y bloques.
-- **Persistencia:** SQLite por defecto para facilitar la demostración; la configuración puede migrarse a MySQL mediante `.env`.
+- **Persistencia:** SQLite en local y Cloud SQL MySQL en la nube. Sesiones e imágenes se guardan en la base de datos para sobrevivir a los reinicios de Cloud Run.
 
 El precio sugerido aplica un incremento básico por proporción acuñada (escasez) y por ventas registradas (demanda). El precio efectivo de una publicación queda fijado por el vendedor.
 
@@ -58,8 +66,8 @@ El precio sugerido aplica un incremento básico por proporción acuñada (escase
 php artisan test
 ```
 
-Las pruebas cubren carga del mercado, cambio de usuario, compra con transferencia de saldo/propiedad, acuñación con registro de bloque, el ciclo completo de subastas y el panel de administración (acceso por rol, moderación de colecciones, suspensión de cuentas y registro en la cadena).
+Las pruebas usan SQLite en memoria (no borran tu base local) y cubren mercado, autenticación, permisos, transferencia de saldo/propiedad, subida de imágenes, acuñación, favoritos, integridad de la cadena, subastas y moderación. El build se verifica con `npm run build`.
 
-## Próximo incremento
+## Equipo y despliegue
 
-Los pendientes, responsables y fecha objetivo están en [docs/PENDIENTES.md](docs/PENDIENTES.md) y en la vista `/pendientes` de la aplicación. Las tareas 1 (Ofertas y pujas) y 2 (Panel de administración) ya están implementadas; el detalle de su diseño está en ese mismo documento.
+Las cuatro tareas están completadas en [docs/PENDIENTES.md](docs/PENDIENTES.md) y en `/pendientes`, que conserva la fecha objetivo original del 23 de septiembre. La guía de despliegue y operación está en [docs/GCP.md](docs/GCP.md).

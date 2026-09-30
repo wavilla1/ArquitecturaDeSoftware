@@ -5,7 +5,7 @@
 @section('content')
     <section class="profile-hero container">
         <span class="profile-avatar" style="--avatar: {{ $activeUser->accent }}">{{ mb_strtoupper(mb_substr($activeUser->name, 0, 1)) }}</span>
-        <div><span class="eyebrow">Perfil de demostración</span><h1>{{ $activeUser->name }}</h1><p>{{ '@'.$activeUser->handle }} · {{ $activeUser->email }}</p></div>
+        <div><span class="eyebrow">Mi perfil</span><h1>{{ $activeUser->name }}</h1><p>{{ '@'.$activeUser->handle }} · {{ $activeUser->email }}</p></div>
         <div class="balance-card"><span>Saldo disponible</span><strong>{{ number_format((float) $activeUser->balance, 2) }}</strong><small>MONO</small></div>
     </section>
 
@@ -15,6 +15,7 @@
             @forelse ($inventory as $nft)
                 <article class="inventory-card">
                     <div class="inventory-art nft-art" style="--art-start: {{ $nft->collection->palette_from }}; --art-end: {{ $nft->collection->palette_to }}">
+                        @if ($nft->collection->image_data)<img class="collection-image" src="{{ route('collections.image', $nft->collection) }}" alt="{{ $nft->collection->name }}" loading="lazy">@endif
                         <span class="nft-edition">#{{ str_pad($nft->token_number, 2, '0', STR_PAD_LEFT) }}</span>
                         <span class="nft-monogram">{{ mb_strtoupper(mb_substr($nft->collection->name, 0, 1)) }}</span>
                         <div class="art-ring"></div>
