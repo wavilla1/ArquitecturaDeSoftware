@@ -164,7 +164,8 @@ class MarketplaceController extends Controller
             $this->chain->appendBlock("Venta de {$nft->collection->name} #{$nft->token_number}: @{$seller->handle} → @{$buyer->handle}");
         });
 
-        return back()->with('success', 'Compra completada. El NFT ya aparece en tu inventario.');
+        return ($request->boolean('return_to_market') ? redirect()->route('marketplace') : back())
+            ->with('success', 'Compra completada. El NFT ya aparece en tu inventario.');
     }
 
     public function bid(Request $request, Listing $listing): RedirectResponse

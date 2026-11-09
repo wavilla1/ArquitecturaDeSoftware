@@ -4,9 +4,11 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CollectionController;
 use App\Http\Controllers\MarketplaceController;
+use App\Http\Controllers\NftController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [MarketplaceController::class, 'index'])->name('marketplace');
+Route::get('/nfts/{nft}', [NftController::class, 'show'])->whereNumber('nft')->name('nfts.show');
 Route::get('/acunar', [MarketplaceController::class, 'mint'])->middleware('market.user')->name('mint');
 Route::get('/perfil', [MarketplaceController::class, 'profile'])->middleware('market.user')->name('profile');
 Route::get('/pendientes', [MarketplaceController::class, 'roadmap'])->name('roadmap');

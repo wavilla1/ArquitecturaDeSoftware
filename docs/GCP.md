@@ -2,7 +2,9 @@
 
 Proyecto dedicado: `monoverse-mvp-20260930` (Monoverse MVP). Región: `us-central1`.
 
-Sitio público: [Monoverse](https://monoverse-414457182299.us-central1.run.app). Desplegado el 30 de septiembre de 2026 en Cloud Run, imagen `us-central1-docker.pkg.dev/monoverse-mvp-20260930/monoverse/web:v3`.
+Sitio público: [Monoverse](https://monoverse-414457182299.us-central1.run.app). Primera publicación: 30 de septiembre de 2026.
+
+Actualización del 9 de noviembre de 2026: revisión `monoverse-00002-nov`, imagen `us-central1-docker.pkg.dev/monoverse-mvp-20260930/monoverse/web:api-20261109-1`, con el 100 % del tráfico de producción. Se añadió el [catálogo JSON público](https://monoverse-414457182299.us-central1.run.app/api/v1/nfts?page=1) y las páginas `/nfts/{id}`. Contrato y ejemplos en [API.md](API.md).
 
 ## Componentes
 
@@ -24,7 +26,16 @@ Acceso al secreto desde la [consola de Secret Manager](https://console.cloud.goo
 
 Consola del proyecto: https://console.cloud.google.com/home/dashboard?project=monoverse-mvp-20260930
 
-## Verificación de la entrega
+## Verificación del catálogo del 9 de noviembre
+
+- 35 pruebas automatizadas, 286 aserciones, incluido un conjunto de 10 pruebas nuevas para la API: aprobadas.
+- Build de Vite y Cloud Build: aprobados. La nueva revisión se verificó sin tráfico antes de promoverla.
+- 94 comprobaciones HTTP aprobadas tanto en la revisión temporal como en la URL de producción: contrato JSON, CORS, ausencia de sesión, precios, enlaces, validación, métodos rechazados, login y cadena íntegra.
+- Paginación real comprobada con 31 piezas disponibles durante la revisión: 20 en la primera página y 11 en la segunda, sin IDs duplicados. También se comprobaron todos los enlaces de detalle de la segunda página.
+- No hubo migraciones ni reinicialización de datos. La instancia Cloud SQL terminó su operación de mantenimiento y quedó `RUNNABLE`; las cuentas e inventario existentes se conservaron.
+- Los jobs de inicialización y subastas apuntan a la misma imagen nueva; el job de inicialización no se ejecutó, al no existir cambios de esquema.
+
+## Verificación de la primera entrega
 
 - 25 pruebas automatizadas de Laravel, 122 aserciones: aprobadas.
 - Build de Vite y compilación de la imagen en Cloud Build: aprobados.

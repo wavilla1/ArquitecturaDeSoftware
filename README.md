@@ -72,6 +72,10 @@ php artisan test
 
 Las pruebas usan SQLite en memoria (no borran tu base local) y cubren mercado, autenticación, permisos, transferencia de saldo/propiedad, subida de imágenes, acuñación, favoritos, integridad de la cadena, subastas y moderación. El build se verifica con `npm run build`.
 
+## Servicio JSON para otros equipos
+
+El catálogo público se consulta con `GET /api/v1/nfts?page=1`, sin autenticación. Entrega NFTs en venta directa, paginación, precios e imágenes opcionales, con enlaces a `/nfts/{id}`. El contrato completo, los campos, ejemplos y reglas de consumo están en [docs/API.md](docs/API.md).
+
 ## Equipo y despliegue
 
 Las cuatro tareas están completadas en [docs/PENDIENTES.md](docs/PENDIENTES.md) y en `/pendientes`, que conserva la fecha objetivo original del 23 de septiembre. La guía de despliegue y operación está en [docs/GCP.md](docs/GCP.md).

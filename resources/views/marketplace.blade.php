@@ -111,6 +111,7 @@
                                 <div><span>Precio</span><strong>{{ number_format((float) $listing->price, 2) }} MONO</strong></div>
                                 <small>Sugerido {{ number_format($collection->suggestedPrice(), 2) }}</small>
                             </div>
+                            <p class="favorite-actions"><a href="{{ route('nfts.show', $listing->nft) }}">{{ __('catalog.view') }} →</a></p>
                             @if (!$activeUser)
                                 <a class="button button-card" href="{{ route('login') }}">Ingresar para comprar</a>
                             @elseif ($listing->seller_id === $activeUser->id)
