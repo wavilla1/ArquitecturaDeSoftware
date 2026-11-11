@@ -64,6 +64,15 @@ Para mantener el cierre de subastas sin visitas, ejecuta `php artisan schedule:w
 
 El precio sugerido aplica un incremento básico por proporción acuñada (escasez) y por ventas registradas (demanda). El precio efectivo de una publicación queda fijado por el vendedor.
 
+## Idiomas (español / inglés)
+
+El sitio está disponible en español (idioma predeterminado) e inglés. El selector **ES / EN** de la cabecera guarda la elección en la sesión mediante `GET /idioma/{es|en}`, y el middleware `SetLocale` aplica el idioma (incluidas las fechas relativas de Carbon) en cada petición.
+
+- Los textos se escriben en español dentro de `__('...')`; el español es la propia clave, así que no necesita archivo de traducción.
+- Las traducciones al inglés viven en `lang/en.json`. Al añadir un texto nuevo, envuélvelo en `__()` y agrega su traducción en ese archivo (`LocaleTest` verifica que ninguna quede vacía).
+- Los mensajes de validación en español están en `lang/es/validation.php`; en inglés se usan los de Laravel.
+- Los eventos de la cadena (`blocks.event`) y el contenido creado por los usuarios no se traducen: forman parte del registro encadenado por hash.
+
 ## Pruebas
 
 ```bash

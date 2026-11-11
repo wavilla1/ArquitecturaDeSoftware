@@ -44,8 +44,8 @@ class AdminController extends Controller
         $updated = $this->admin->toggleCollectionVisibility($collection, $this->session->activeUser($request));
 
         return back()->with('success', $updated->isHidden()
-            ? "Colección «{$updated->name}» oculta del mercado público."
-            : "Colección «{$updated->name}» restaurada en el mercado.");
+            ? __('Colección «:name» oculta del mercado público.', ['name' => $updated->name])
+            : __('Colección «:name» restaurada en el mercado.', ['name' => $updated->name]));
     }
 
     public function toggleUser(Request $request, User $user): RedirectResponse
@@ -53,7 +53,7 @@ class AdminController extends Controller
         $updated = $this->admin->toggleUserSuspension($user, $this->session->activeUser($request));
 
         return back()->with('success', $updated->isSuspended()
-            ? "Usuario @{$updated->handle} suspendido."
-            : "Usuario @{$updated->handle} reactivado.");
+            ? __('Usuario @:handle suspendido.', ['handle' => $updated->handle])
+            : __('Usuario @:handle reactivado.', ['handle' => $updated->handle]));
     }
 }

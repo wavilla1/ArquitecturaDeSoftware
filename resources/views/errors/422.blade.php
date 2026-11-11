@@ -1,6 +1,6 @@
 @extends('layouts.app')
 @php($activeUser = auth()->user())
-@section('title', 'Revisa la operación')
+@section('title', __('Revisa la operación'))
 @section('content')
-<section class="page-hero container"><h1>Revisa la operación</h1><p>{{ $exception->getMessage() ?: 'No se pudo completar esta operación.' }}</p><a class="button button-primary" href="{{ route('marketplace') }}">Volver al mercado</a></section>
+<section class="page-hero container"><h1>{{ __('Revisa la operación') }}</h1><p>{{ $exception->getMessage() ? __($exception->getMessage()) : __('No se pudo completar esta operación.') }}</p><a class="button button-primary" href="{{ route('marketplace') }}">{{ __('catalog.back') }}</a></section>
 @endsection

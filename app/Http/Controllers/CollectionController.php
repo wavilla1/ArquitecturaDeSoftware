@@ -37,7 +37,7 @@ class CollectionController extends Controller
         abort_if($nft->collection->isHidden(), 404);
         $this->saveFavorite($request, $session->activeUser($request), 'favoriteNfts', $nft->id);
 
-        return back()->with('success', 'Favoritos actualizados.');
+        return back()->with('success', __('Favoritos actualizados.'));
     }
 
     public function favoriteCollection(Request $request, NftCollection $collection, DemoSessionService $session)
@@ -45,7 +45,7 @@ class CollectionController extends Controller
         abort_if($collection->isHidden(), 404);
         $this->saveFavorite($request, $session->activeUser($request), 'favoriteCollections', $collection->id);
 
-        return back()->with('success', 'Favoritos actualizados.');
+        return back()->with('success', __('Favoritos actualizados.'));
     }
 
     private function saveFavorite(Request $request, User $user, string $relation, int $id): void
