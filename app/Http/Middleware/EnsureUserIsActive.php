@@ -23,7 +23,7 @@ class EnsureUserIsActive
         abort_if(
             $this->session->activeUser($request)->isSuspended(),
             403,
-            'Tu cuenta está suspendida por un administrador: no puedes operar en el mercado.'
+            __('Tu cuenta está suspendida por un administrador: no puedes operar en el mercado.')
         );
 
         return $next($request);

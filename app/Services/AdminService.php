@@ -53,8 +53,8 @@ class AdminService
         return DB::transaction(function () use ($user, $admin): User {
             $locked = User::query()->whereKey($user->id)->lockForUpdate()->firstOrFail();
 
-            abort_if($locked->id === $admin->id, 422, 'No puedes suspender tu propia cuenta de administrador.');
-            abort_if($locked->is_admin, 422, 'No se puede suspender a otro administrador.');
+            abort_if($locked->id === $admin->id, 422, __('No puedes suspender tu propia cuenta de administrador.'));
+            abort_if($locked->is_admin, 422, __('No se puede suspender a otro administrador.'));
 
             $suspending = ! $locked->isSuspended();
             $locked->update(['suspended_at' => $suspending ? now() : null]);

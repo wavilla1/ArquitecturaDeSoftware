@@ -127,7 +127,7 @@ class MarketplaceController extends Controller
             }
         });
 
-        return redirect()->route('profile')->with('success', 'Colección creada y NFTs acuñados.');
+        return redirect()->route('profile')->with('success', __('Colección creada y NFTs acuñados.'));
     }
 
     public function buy(Request $request, Listing $listing): RedirectResponse
@@ -136,17 +136,17 @@ class MarketplaceController extends Controller
 
         DB::transaction(function () use ($listing, $buyerId): void {
             $lockedListing = Listing::query()->whereKey($listing->id)->lockForUpdate()->firstOrFail();
-            abort_if($lockedListing->status !== 'active', 409, 'Esta publicación ya no está disponible.');
-            abort_if($lockedListing->isAuction(), 422, 'Esta publicación es una subasta: participa ofertando en vez de comprar directo.');
+            abort_if($lockedListing->status !== 'active', 409, __('Esta publicación ya no está disponible.'));
+            abort_if($lockedListing->isAuction(), 422, __('Esta publicación es una subasta: participa ofertando en vez de comprar directo.'));
 
             $buyer = User::query()->whereKey($buyerId)->lockForUpdate()->firstOrFail();
             $seller = User::query()->whereKey($lockedListing->seller_id)->lockForUpdate()->firstOrFail();
             $nft = Nft::query()->whereKey($lockedListing->nft_id)->lockForUpdate()->firstOrFail();
-            abort_if($nft->owner_id !== $seller->id, 409, 'El propietario cambió.');
-            abort_if($seller->isSuspended() || $nft->collection->isHidden(), 422, 'Esta publicación no está disponible por moderación.');
+            abort_if($nft->owner_id !== $seller->id, 409, __('El propietario cambió.'));
+            abort_if($seller->isSuspended() || $nft->collection->isHidden(), 422, __('Esta publicación no está disponible por moderación.'));
 
-            abort_if($buyer->id === $seller->id, 422, 'No puedes comprar tu propio NFT.');
-            abort_if((float) $buyer->balance < (float) $lockedListing->price, 422, 'Saldo insuficiente para completar la compra.');
+            abort_if($buyer->id === $seller->id, 422, __('No puedes comprar tu propio NFT.'));
+            abort_if((float) $buyer->balance < (float) $lockedListing->price, 422, __('Saldo insuficiente para completar la compra.'));
 
             $buyer->balance = (float) $buyer->balance - (float) $lockedListing->price;
             $seller->balance = (float) $seller->balance + (float) $lockedListing->price;
@@ -168,7 +168,7 @@ class MarketplaceController extends Controller
         });
 
         return ($request->boolean('return_to_market') ? redirect()->route('marketplace') : back())
-            ->with('success', 'Compra completada. El NFT ya aparece en tu inventario.');
+            ->with('success', __('Compra completada. El NFT ya aparece en tu inventario.'));
     }
 
     public function bid(Request $request, Listing $listing): RedirectResponse
@@ -180,7 +180,7 @@ class MarketplaceController extends Controller
 
         $this->auctions->placeBid($listing, $bidder->id, (float) $validated['amount']);
 
-        return back()->with('success', 'Puja registrada. Si alguien te supera, tu saldo se libera automáticamente.');
+        return back()->with('success', __('Puja registrada. Si alguien te supera, tu saldo se libera automáticamente.'));
     }
 
     public function profile(Request $request): View
@@ -226,9 +226,9 @@ class MarketplaceController extends Controller
 
         DB::transaction(function () use ($nft, $validated, $userId, $type): void {
             $lockedNft = Nft::query()->whereKey($nft->id)->lockForUpdate()->firstOrFail();
-            abort_if($lockedNft->collection->isHidden(), 422, 'Esta colección está oculta por moderación.');
-            abort_unless($lockedNft->owner_id === $userId, 403, 'Solo el propietario puede publicar este NFT.');
-            abort_if(Listing::where('nft_id', $lockedNft->id)->where('status', 'active')->exists(), 409, 'El NFT ya está publicado.');
+            abort_if($lockedNft->collection->isHidden(), 422, __('Esta colección está oculta por moderación.'));
+            abort_unless($lockedNft->owner_id === $userId, 403, __('Solo el propietario puede publicar este NFT.'));
+            abort_if(Listing::where('nft_id', $lockedNft->id)->where('status', 'active')->exists(), 409, __('El NFT ya está publicado.'));
 
             Listing::create([
                 'nft_id' => $lockedNft->id,
@@ -251,7 +251,7 @@ class MarketplaceController extends Controller
             $this->chain->appendBlock("{$label} de {$lockedNft->collection->name} #{$lockedNft->token_number} por @{$lockedNft->owner->handle}");
         });
 
-        return back()->with('success', $type === Listing::TYPE_AUCTION ? 'Subasta abierta. Recibirás la mejor puja al cierre.' : 'NFT publicado en el mercado.');
+        return back()->with('success', $type === Listing::TYPE_AUCTION ? __('Subasta abierta. Recibirás la mejor puja al cierre.') : __('NFT publicado en el mercado.'));
     }
 
     public function switchUser(Request $request): RedirectResponse
@@ -260,7 +260,7 @@ class MarketplaceController extends Controller
         $validated = $request->validate(['user_id' => ['required', 'exists:users,id']]);
         $request->session()->put('demo_user_id', (int) $validated['user_id']);
 
-        return back()->with('success', 'Usuario de demostración actualizado.');
+        return back()->with('success', __('Usuario de demostración actualizado.'));
     }
 
     public function roadmap(Request $request): View

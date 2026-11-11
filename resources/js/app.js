@@ -19,7 +19,7 @@ document.querySelectorAll('form[data-confirm]').forEach((form) => {
         const button = form.querySelector('button[type="submit"]');
         if (button) {
             button.disabled = true;
-            button.textContent = 'Procesando…';
+            button.textContent = document.body.dataset.i18nProcessing || 'Procesando…';
         }
     });
 });
@@ -32,7 +32,7 @@ const colorFrom = document.querySelector('#palette-from');
 const colorTo = document.querySelector('#palette-to');
 
 const updatePreview = () => {
-    const name = nameInput?.value.trim() || 'Tu colección';
+    const name = nameInput?.value.trim() || document.body.dataset.i18nCollection || 'Tu colección';
     if (previewName) previewName.textContent = name;
     if (previewMonogram) previewMonogram.textContent = name.charAt(0).toUpperCase();
     if (preview && colorFrom && colorTo) {
