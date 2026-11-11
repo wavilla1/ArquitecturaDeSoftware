@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CollectionController;
+use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\MarketplaceController;
 use App\Http\Controllers\NftController;
 use Illuminate\Support\Facades\Route;
@@ -20,6 +21,7 @@ Route::post('/ingresar', [AuthController::class, 'login'])->middleware(['guest',
 Route::get('/registro', [AuthController::class, 'registerForm'])->middleware('guest')->name('register');
 Route::post('/registro', [AuthController::class, 'register'])->middleware(['guest', 'throttle:5,1'])->name('register.store');
 Route::post('/salir', [AuthController::class, 'logout'])->name('logout');
+Route::get('/idioma/{locale}', LocaleController::class)->whereIn('locale', ['es', 'en'])->name('locale.switch');
 Route::get('/favoritos', [CollectionController::class, 'favorites'])->middleware('market.user')->name('favorites');
 
 // Acciones de escritura del mercado: bloqueadas para cuentas suspendidas.

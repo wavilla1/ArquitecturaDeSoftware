@@ -19,7 +19,7 @@ class EnsureIsAdmin
      */
     public function handle(Request $request, Closure $next): Response
     {
-        abort_unless($this->session->activeUser($request)->is_admin, 403, 'Solo un administrador puede entrar al panel.');
+        abort_unless($this->session->activeUser($request)->is_admin, 403, __('Solo un administrador puede entrar al panel.'));
 
         return $next($request);
     }

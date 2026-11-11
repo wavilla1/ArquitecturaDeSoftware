@@ -26,16 +26,16 @@ class AuctionService
         return DB::transaction(function () use ($listing, $bidderId, $amount): Bid {
             $lockedListing = Listing::query()->whereKey($listing->id)->lockForUpdate()->firstOrFail();
 
-            abort_unless($lockedListing->isAuction(), 422, 'Esta publicación no acepta pujas.');
-            abort_if($lockedListing->status !== 'active', 409, 'Esta subasta ya no está disponible.');
-            abort_if($lockedListing->hasClosed(), 409, 'La subasta ya cerró; espera la adjudicación.');
-            abort_if($lockedListing->seller_id === $bidderId, 422, 'No puedes ofertar por tu propio NFT.');
+            abort_unless($lockedListing->isAuction(), 422, __('Esta publicación no acepta pujas.'));
+            abort_if($lockedListing->status !== 'active', 409, __('Esta subasta ya no está disponible.'));
+            abort_if($lockedListing->hasClosed(), 409, __('La subasta ya cerró; espera la adjudicación.'));
+            abort_if($lockedListing->seller_id === $bidderId, 422, __('No puedes ofertar por tu propio NFT.'));
 
             // La moderación del panel de administración congela la subasta:
             // no entran pujas nuevas, pero la vigente conserva su reserva.
             $nft = Nft::query()->whereKey($lockedListing->nft_id)->with('collection')->firstOrFail();
-            abort_if($nft->collection->isHidden(), 422, 'Esta colección está oculta por moderación y no admite pujas.');
-            abort_if($lockedListing->seller->isSuspended(), 422, 'El vendedor está suspendido: la subasta no admite pujas.');
+            abort_if($nft->collection->isHidden(), 422, __('Esta colección está oculta por moderación y no admite pujas.'));
+            abort_if($lockedListing->seller->isSuspended(), 422, __('El vendedor está suspendido: la subasta no admite pujas.'));
 
             $leadingBid = Bid::query()
                 ->where('listing_id', $lockedListing->id)
@@ -47,11 +47,11 @@ class AuctionService
                 ? round((float) $leadingBid->amount + Listing::MIN_BID_INCREMENT, 2)
                 : (float) $lockedListing->price;
 
-            abort_if($amount < $minimum, 422, "La puja debe ser de al menos {$minimum} MONO.");
-            abort_if($leadingBid && (int) $leadingBid->bidder_id === $bidderId, 422, 'Ya tienes la puja más alta de esta subasta.');
+            abort_if($amount < $minimum, 422, __('La puja debe ser de al menos :minimum MONO.', ['minimum' => $minimum]));
+            abort_if($leadingBid && (int) $leadingBid->bidder_id === $bidderId, 422, __('Ya tienes la puja más alta de esta subasta.'));
 
             $bidder = User::query()->whereKey($bidderId)->lockForUpdate()->firstOrFail();
-            abort_if((float) $bidder->balance < $amount, 422, 'Saldo insuficiente para esta puja.');
+            abort_if((float) $bidder->balance < $amount, 422, __('Saldo insuficiente para esta puja.'));
 
             $bidder->balance = (float) $bidder->balance - $amount;
             $bidder->save();

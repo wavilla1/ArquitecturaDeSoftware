@@ -24,7 +24,7 @@ class AuthController extends Controller
     {
         $credentials = $request->validate(['email' => 'required|email', 'password' => 'required|string']);
         if (! Auth::attempt($credentials)) {
-            throw ValidationException::withMessages(['email' => 'Correo o contraseña incorrectos.']);
+            throw ValidationException::withMessages(['email' => __('Correo o contraseña incorrectos.')]);
         }
         $request->session()->regenerate();
 
@@ -43,7 +43,7 @@ class AuthController extends Controller
         Auth::login($user);
         $request->session()->regenerate();
 
-        return redirect()->route('profile')->with('success', 'Tu cuenta está lista. Recibiste 25 MONO virtuales para explorar el mercado.');
+        return redirect()->route('profile')->with('success', __('Tu cuenta está lista. Recibiste 25 MONO virtuales para explorar el mercado.'));
     }
 
     public function logout(Request $request)
