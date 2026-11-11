@@ -40,6 +40,26 @@
         </div>
     </section>
 
+    @if ($cryptoQuotes !== [])
+        <section class="container crypto-ticker" aria-label="Mercado cripto real">
+            <div class="crypto-ticker-heading">
+                <span class="eyebrow"><i></i> Mercado cripto real</span>
+                <small>Precios en USD · fuente: <a href="https://www.coingecko.com" target="_blank" rel="noopener noreferrer">CoinGecko</a>. MONO es saldo virtual y no cotiza.</small>
+            </div>
+            <div class="crypto-ticker-grid">
+                @foreach ($cryptoQuotes as $quote)
+                    <div class="crypto-quote">
+                        <span>{{ $quote['name'] }} · {{ $quote['symbol'] }}</span>
+                        <strong>${{ number_format($quote['price_usd'], 2) }}</strong>
+                        @if ($quote['change_24h'] !== null)
+                            <small class="{{ $quote['change_24h'] >= 0 ? 'quote-up' : 'quote-down' }}">{{ $quote['change_24h'] >= 0 ? '↑' : '↓' }} {{ number_format(abs($quote['change_24h']), 2) }}% en 24 h</small>
+                        @endif
+                    </div>
+                @endforeach
+            </div>
+        </section>
+    @endif
+
     <section class="section container" id="explorar">
         <div class="section-heading">
             <div>

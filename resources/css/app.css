@@ -137,6 +137,17 @@ button { color: inherit; }
 .stats-grid strong { font-size: 1.75rem; }
 .stats-grid span { color: var(--muted); font-size: .77rem; text-transform: uppercase; letter-spacing: .1em; }
 
+.crypto-ticker { padding-top: 44px; }
+.crypto-ticker-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 16px; }
+.crypto-ticker-heading small { color: var(--muted); font-size: .78rem; }
+.crypto-ticker-heading a { color: var(--violet-light); }
+.crypto-ticker-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
+.crypto-quote { display: flex; flex-direction: column; gap: 4px; padding: 18px 22px; border: 1px solid var(--line); border-radius: 16px; background: rgba(21,16,42,.55); }
+.crypto-quote span { color: var(--muted); font-size: .77rem; text-transform: uppercase; letter-spacing: .1em; }
+.crypto-quote strong { font-size: 1.35rem; }
+.crypto-quote .quote-up { color: #4ade80; }
+.crypto-quote .quote-down { color: #fb7185; }
+
 .section { padding-block: 88px 20px; }
 .section-heading { display: flex; align-items: end; justify-content: space-between; gap: 40px; margin-bottom: 30px; }
 .section-heading h2 { margin: 8px 0 0; font-size: clamp(2rem, 4vw, 3.25rem); letter-spacing: -.045em; }

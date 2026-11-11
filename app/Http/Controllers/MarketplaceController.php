@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Contracts\CryptoMarket;
 use App\Models\Block;
 use App\Models\Listing;
 use App\Models\MarketplaceTransaction;
@@ -23,6 +24,7 @@ class MarketplaceController extends Controller
         private readonly ChainService $chain,
         private readonly AuctionService $auctions,
         private readonly DemoSessionService $session,
+        private readonly CryptoMarket $cryptoMarket,
     ) {}
 
     public function index(Request $request): View
@@ -49,6 +51,7 @@ class MarketplaceController extends Controller
             'nftCount' => Nft::count(),
             'volume' => MarketplaceTransaction::where('type', 'sale')->sum('amount'),
             'recentBlocks' => Block::orderByDesc('position')->limit(3)->get(),
+            'cryptoQuotes' => $this->cryptoMarket->quotes(),
         ]);
     }
 

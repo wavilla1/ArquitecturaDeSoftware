@@ -28,6 +28,14 @@ return [
         'key' => env('RESEND_KEY'),
     ],
 
+    'coingecko' => [
+        // "coingecko" consulta la API real; "null" desactiva la integración.
+        'driver' => env('CRYPTO_MARKET_DRIVER', 'coingecko'),
+        'base_url' => env('COINGECKO_BASE_URL', 'https://api.coingecko.com/api/v3'),
+        'coins' => ['bitcoin', 'ethereum', 'solana'],
+        'cache_seconds' => 300,
+    ],
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),
